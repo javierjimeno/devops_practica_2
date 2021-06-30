@@ -22,5 +22,5 @@ variable "vm_size" {
 variable "ssh_user" {
   type = string
   description = "Usuario para hacer ssh"
-  default = "<SSH USER>"
+  default = "adminusername"
 }
