@@ -12,7 +12,7 @@ terraform {
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group
 
 resource "azurerm_resource_group" "rg" {
-    name     =  "rg_jjv"
+    name     =  "jjv_rg_devops2"
     location = var.location
 
     tags = {

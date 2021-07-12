@@ -1,0 +1,81 @@
+- name: Instalar paquetes
+  ansible.builtin.package:
+    name: 
+      - net-tools
+    state: latest
+  become: yes
+
+- name: Habilitar nfs-server
+  systemd:
+    name: nfs-server
+    enabled: yes
+  become: yes
+  
+- name: Iniciar nfs-server
+  command: /usr/bin/systemctl start nfs-server
+  become: yes
+
+# no me funciona la iniciación con modulos de ansible
+#- name: Iniciar nfs-server
+#  systemd: 
+#    name: nfs-server
+#    state: started
+#    enabled: yes
+#  become: yes
+
+- name: Crea directorio
+  ansible.builtin.file:
+    path: /srv/nfs
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Añadir el acceso share a master y workers
+  blockinfile:
+    dest: /etc/exports
+    block: |
+      /srv/nfs  192.168.1.10(rw,sync)
+      /srv/nfs  192.168.1.12(rw,sync)
+      /srv/nfs  192.168.1.13(rw,sync)
+  become: yes
+
+- name: Forzar lectura y carga del fichero /etc/exports
+  command: exportfs -r
+  become: yes
+
+- name: Iniciar firewalld
+  command: /usr/bin/systemctl start firewalld
+  become: yes
+
+# no me funciona la iniciación con modulos de ansible
+#- name: Iniciar firewalld
+#  systemd: 
+#    name: firewalld
+#    state: started
+#    enabled: yes
+#  become: yes
+
+- name: Abrir puertos para nfs
+  ansible.posix.firewalld:
+    service: nfs
+    permanent: yes
+    state: enabled
+  become: yes
+
+- name: Abrir puertos para rpc-bind
+  ansible.posix.firewalld:
+    service: rpc-bind
+    permanent: yes
+    state: enabled
+  become: yes
+
+- name: Abrir puertos para mounts
+  ansible.posix.firewalld:
+    service: mountd
+    permanent: yes
+    state: enabled
+  become: yes
+
+- name: Recargar firewalld
+  command: /usr/bin/firewall-cmd --reload
+  become: yes

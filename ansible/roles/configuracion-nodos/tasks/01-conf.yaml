@@ -1,0 +1,105 @@
+- name: Añadir la resolución DNS
+  blockinfile:
+    dest: /etc/hosts
+    block: |
+      192.168.1.10 master master.jjv.es
+      192.168.1.11 nfs nfs.jjv.es
+      192.168.1.12 worker1 worker1.jjv.es
+      192.168.1.13 worker2 worker2.jjv.es
+  become: yes
+
+- name: Habilitar firewalld
+  systemd:
+    name: firewalld
+    enabled: yes
+  become: yes
+
+- name: Iniciar firewalld
+  command: /usr/bin/systemctl start firewalld
+  become: yes
+
+- name: Añadir br_netfilter
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+  become: yes
+
+- name: Activar transparent masquerading
+  ansible.posix.firewalld:
+    masquerade: yes
+    state: enabled
+    permanent: yes
+  become: yes
+
+- name: Recargar firewalld
+  command: /usr/bin/firewall-cmd --reload
+  become: yes
+
+- name: Permitir que kubernetes maneje el tráfico con el cortafuegos
+  blockinfile:
+    dest: /etc/sysctl.d/k8s.conf
+    create: true
+    block: |
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+  become: yes
+
+- name: Recargar firewalld
+  command: sysctl --system
+  become: yes
+
+- name: Añadir repositorio
+  command: dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+  become: yes
+
+- name: Instalar docker
+  dnf:
+    name: docker-ce-20.10.6-3.el8
+    state: latest
+  become: yes
+
+- name: Habilitar docker
+  systemd:
+    name: docker
+    enabled: yes
+  become: yes
+
+- name: Iniciar docker
+  command: /usr/bin/systemctl start docker
+  become: yes
+
+- name: Configurar repositorio de kubernetes
+  blockinfile:
+    dest: /etc/yum.repos.d/kubernetes.repo
+    create: true
+    block: |
+      [kubernetes]
+      name=Kubernetes
+      baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+      enabled=1
+      gpgcheck=1
+      repo_gpgcheck=1
+      gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+      exclude=kubelet kubeadm kubectl
+  become: yes
+
+- name: Instalar kubernetes
+  dnf:
+    name: '{{item}}'
+    state: latest
+    disable_excludes: kubernetes
+  become: yes
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: Habilitar kubernetes
+  systemd:
+    name: kubelet
+    enabled: yes
+  become: yes
+
+- name: Iniciar kubernetes
+  command: /usr/bin/systemctl start kubelet
+  become: yes

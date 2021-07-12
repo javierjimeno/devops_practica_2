@@ -1,0 +1,5 @@
+- name: configuración inicial para todos los nodos
+  hosts: all
+  gather_facts: false
+  roles:
+    - configuracion-comun

@@ -1,0 +1,5 @@
+- name: configuración para el nfs
+  hosts: nfs
+  gather_facts: false
+  roles:
+    - configuracion-nfs
