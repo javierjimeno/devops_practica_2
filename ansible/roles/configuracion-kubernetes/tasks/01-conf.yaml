@@ -1,0 +1,111 @@
+- name: habilitar tráfico tcp en el puerto 6443 (Kubernetes API Server)
+  ansible.posix.firewalld:
+    port: 6443/tcp
+    permanent: yes
+    state: enabled
+
+- name: habilitar tráfico tcp en los puertos del 2379 al 2380 (etcd server client API)
+  ansible.posix.firewalld:
+    port: 2379-2380/tcp
+    permanent: yes
+    state: enabled
+
+- name: habilitar tráfico tcp en el puerto 10250 (Kubelet API)
+  ansible.posix.firewalld:
+    port: 10250/tcp
+    permanent: yes
+    state: enabled
+
+- name: habilitar tráfico tcp en el puerto 10251 (kube-scheduler)
+  ansible.posix.firewalld:
+    port: 10251/tcp
+    permanent: yes
+    state: enabled
+
+- name: habilitar tráfico tcp en el puerto 10252 (kube-controller-manager)
+  ansible.posix.firewalld:
+    port: 10252/tcp
+    permanent: yes
+    state: enabled
+
+- name: habilitar tráfico tcp en el puerto 10255 (Statistics)
+  ansible.posix.firewalld:
+    port: 10255/tcp
+    permanent: yes
+    state: enabled
+
+- name: Recargar firewalld
+  command: /usr/bin/firewall-cmd --reload
+
+- name: Configurar kubeadm
+  command: kubeadm config images pull
+
+- name: habilitar acceso a worker1
+  ansible.posix.firewalld:
+    rich_rule: rule family=ipv4 source address=192.168.1.12/32 accept
+    permanent: yes
+    state: enabled
+
+- name: habilitar acceso a worker2
+  ansible.posix.firewalld:
+    rich_rule: rule family=ipv4 source address=192.168.1.13/32 accept
+    permanent: yes
+    state: enabled
+
+- name: Recargar firewalld
+  command: /usr/bin/firewall-cmd --reload
+
+- name: habilitar acceso de los contenedores a localhost
+  ansible.posix.firewalld:
+    rich_rule: rule family=ipv4 source address=172.17.0.0/16 accept
+    permanent: yes
+    zone: public
+    state: enabled
+
+- name: Recargar firewalld
+  command: /usr/bin/firewall-cmd --reload
+
+- name: Instalar el plugin CNI
+  command: kubeadm init --pod-network-cidr 192.169.0.0/16
+  register: cni_response
+
+- name: debug
+  debug: msg="{{cni_response.stdout}}"
+
+# no funciona
+#- name: Permisos a root para utilizar kubectl
+#  command: exportKUBECONFIG=/etc/kubernetes/admin.conf
+
+- name: Crear directorio
+  command: mkdir -p /root/.kube
+
+- name: Copiar archivo configuracion
+  command: cp -i /etc/kubernetes/admin.conf /root/.kube/config
+
+- name: Permisos a root para utilizar kubectl
+  command: chown $(id -un):$(id -gn) /root/.kube/config
+
+- name: Crear usuario no administrador para la gestión del cluster
+  ansible.builtin.user:
+    name: kubeadmin
+    home: /home/kubeadmin
+    groups: admins,developers
+    password: kubeadmin
+
+- name: Crear directorio
+  ansible.builtin.file:
+    path: /home/kubeadmin/.kube
+
+- name: Copiar archivo configuracion
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/kubeadmin/.kube/config
+
+- name: Permisos
+  command: chown kubeadmin. /home/kubeadmin/.kube/config
+
+- name: Escalar permisos
+  blockinfile:
+    dest: /etc/sudoers.d/kubeadmin
+    block: |
+      ALL            ALL = (ALL) NOPASSWD: ALL

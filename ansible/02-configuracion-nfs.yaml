@@ -1,5 +1,6 @@
 - name: configuración para el nfs
   hosts: nfs
+  become: yes
   gather_facts: false
   roles:
     - configuracion-nfs

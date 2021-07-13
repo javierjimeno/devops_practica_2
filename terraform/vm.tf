@@ -6,7 +6,7 @@ resource "azurerm_linux_virtual_machine" "myVM" {
     name                = "azure-vm-${var.nodos[count.index]}"
     resource_group_name = azurerm_resource_group.rg.name
     location            = azurerm_resource_group.rg.location
-    size                = var.vm_size
+    size                = count.index == 0 ? var.vm_size_master : var.vm_size
     admin_username      = var.ssh_user
     network_interface_ids = [ azurerm_network_interface.myNic["${count.index}"].id ]
     disable_password_authentication = true

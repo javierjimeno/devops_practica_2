@@ -1,0 +1,24 @@
+- name: habilitar tráfico udp en el puerto 6443
+  ansible.posix.firewalld:
+    port: 8285/udp
+    permanent: yes
+    state: enabled
+
+- name: habilitar tráfico udp en el puerto 6443
+  ansible.posix.firewalld:
+    port: 8472/udp
+    permanent: yes
+    state: enabled
+  
+- name: habilitar acceso de los contenedores a localhost
+  ansible.posix.firewalld:
+    port: {10250,30000-32767}/tcp
+    permanent: yes
+    zone: public
+    state: enabled
+
+- name: Recargar firewalld
+  command: /usr/bin/firewall-cmd --reload
+
+- name: Unirse al clúster
+  command: kubeadm join 192.168.1.10:6443 --token 6164pa.jphw482u52fil4de --discovery-token-ca-cert-hash sha256:2fb73d43c9b9217af14179faaa01e5ef25ab39bb268a935d405d5c2341978320

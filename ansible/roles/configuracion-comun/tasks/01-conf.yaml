@@ -4,23 +4,19 @@
 - name: Set timezone to Europe/Madrid
   community.general.timezone:
     name: Europe/Madrid
-  become: yes
 
 - name: Instalar chrony
   ansible.builtin.package:
     name: chrony
     state: latest
-  become: yes
 
 - name: Habilitar chronyd
   systemd:
     name: chronyd
     enabled: yes
-  become: yes
 
 - name: Iniciar chronyd
   command: /usr/bin/systemctl start chronyd
-  become: yes
 
 # no me funciona la iniciación con modulos de ansible
 #- name: Iniciar chronyd
@@ -28,15 +24,12 @@
 #    name: chronyd
 #    state: started
 #    enabled: yes
-#  become: yes
 
 - name: Enable ntp
   command: /usr/bin/timedatectl set-ntp true
-  become: yes
 
 - name: Deshabilitar SELinux
   command: /usr/bin/sed -i s/=enforcing/=disabled/g /etc/selinux/config
-  become: yes
 
 - name: Instalar paquetes
   ansible.builtin.package:
@@ -45,4 +38,3 @@
       - nfs4-acl-tools
       - wget
     state: latest
-  become: yes

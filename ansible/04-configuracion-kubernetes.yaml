@@ -1,0 +1,6 @@
+- name: configuración de kubernetes para el nodo master
+  hosts: master
+  become: yes
+  gather_facts: false
+  roles:
+    - configuracion-kubernetes

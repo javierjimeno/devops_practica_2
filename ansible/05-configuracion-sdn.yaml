@@ -1,0 +1,6 @@
+- name: configuración del sdn para el master
+  hosts: master
+  become: yes
+  gather_facts: false
+  roles:
+    - configuracion-sdn

@@ -1,5 +1,6 @@
-- name: configuración inicial para todos los nodos
+- name: configuración para los nodos master y workers
   hosts: master,workers
+  become: yes
   gather_facts: false
   roles:
     - configuracion-nodos

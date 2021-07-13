@@ -1,0 +1,17 @@
+- name: habilitar tráfico udp en el puerto 6443
+  ansible.posix.firewalld:
+    port: 8285/udp
+    permanent: yes
+    state: enabled
+
+- name: habilitar tráfico udp en el puerto 6443
+  ansible.posix.firewalld:
+    port: 8472/udp
+    permanent: yes
+    state: enabled
+
+- name: Recargar firewalld
+  command: /usr/bin/firewall-cmd --reload
+
+- name: Descargar
+  command: kubectl apply -f https://docs.projectcalico.org/manifests/canal.yaml

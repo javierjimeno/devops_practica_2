@@ -1,0 +1,6 @@
+- name: configuración para los workers
+  hosts: workers
+  become: yes
+  gather_facts: false
+  roles:
+    - configuracion-workers
