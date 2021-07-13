@@ -10,3 +10,4 @@ ansible_interpreter=/usr/bin/python3
 
 [workers]
 40.113.108.6
+40.113.110.56
