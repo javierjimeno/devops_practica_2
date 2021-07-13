@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 # configuración común para todos los nodos
