@@ -74,7 +74,7 @@
 
 # no funciona
 #- name: Permisos a root para utilizar kubectl
-#  command: exportKUBECONFIG=/etc/kubernetes/admin.conf
+#  command: export KUBECONFIG=/etc/kubernetes/admin.conf
 
 - name: Crear directorio
   command: mkdir -p /root/.kube
